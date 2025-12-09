@@ -7,7 +7,7 @@ This project introduces a real-time EEG data processing pipeline integrated with
 
 ## Installation
 
-1. After downloading this repository to your computer, install dependencies via pip:
+1. Install dependencies via pip:
 
 ```bash
 pip install brainflow scipy python-osc numba
@@ -18,8 +18,6 @@ Then:
 Place the script inside a Script CHOP in TouchDesigner
 
 Enable the script by selecting your board and serial port. 
-
-For fast installation, copy and paste the code inside BrainFlowCHOP.py to callback of a Script CHOP after installing dependencies. 
 
 
 ## Dependencies
