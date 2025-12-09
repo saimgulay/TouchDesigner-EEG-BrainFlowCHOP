@@ -17,7 +17,10 @@ Then:
 
 Place the script inside a Script CHOP in TouchDesigner
 
-Enable the script by selecting your board and serial port
+Enable the script by selecting your board and serial port. 
+
+For fast installation, copy and paste the code inside BrainFlowCHOP.py to callback of a Script CHOP after installing dependencies. 
+
 
 ## Dependencies
 ```bashbrainflow
