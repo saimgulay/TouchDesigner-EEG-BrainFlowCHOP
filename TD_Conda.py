@@ -4,69 +4,58 @@ import platform
 
 def onStart():
     print("------------------------------------------------")
-    print("DEBUG: Starting Script...")
+    print("DEBUG: Starting Script (Fixed Path)...")
 
-    # --- CONFIGURATION ---
-    user = 'janni'           
-    condaEnv = 'TD'          
-    conda_folder = 'miniconda3' # Change to 'anaconda3' if needed
-    # ---------------------
+    # --- UPDATED PATH ---
+    # We use forward slashes (/) for Python compatibility
+    base_path = 'C:/Users/username/.conda/envs/env_Name'
+    # --------------------
 
-    print(f"DEBUG: Target User: {user}")
-    print(f"DEBUG: Target Environment: {condaEnv}")
-    print(f"DEBUG: Current TD Python Version: {sys.version}")
+    print(f"DEBUG: Target Base Path: {base_path}")
 
     if platform.system().lower() == 'windows':
-        # Construct paths
-        base_path = f'C:/Users/{user}/{conda_folder}/envs/{condaEnv}'
+        
+        # Construct sub-paths
         dll_path = base_path + '/DLLs'
         bin_path = base_path + '/Library/bin'
         site_packages = base_path + '/Lib/site-packages'
 
-        print(f"DEBUG: Checking base path: {base_path}")
-
         # 1. Check Base Folder
         if not os.path.exists(base_path):
-            print(f"CRITICAL ERROR: Base environment folder not found! -> {base_path}")
-            print("Please check your 'user' or 'conda_folder' variables.")
+            print(f"CRITICAL ERROR: Folder not found! -> {base_path}")
+            print("Double check if the folder is '.conda' or just 'conda'.")
             return
         else:
-            print("SUCCESS: Base environment folder exists.")
+            print("SUCCESS: Base environment folder found.")
 
-        # 2. Check and Add DLLs
-        if os.path.exists(dll_path):
-            try:
+        # 2. Check and Add DLLs (Required for Python 3.8+)
+        if sys.version_info.major >= 3 and sys.version_info.minor >= 8:
+            if os.path.isdir(dll_path):
                 os.add_dll_directory(dll_path)
-                print(f"SUCCESS: DLL path added -> {dll_path}")
-            except Exception as e:
-                print(f"ERROR: Issue adding DLL path: {e}")
-        else:
-            print(f"WARNING: DLL folder not found! -> {dll_path}")
-
-        # 3. Check and Add Bin
-        if os.path.exists(bin_path):
-            try:
+                print("SUCCESS: DLL path added.")
+            else:
+                print(f"WARNING: DLL folder missing (common in some envs) -> {dll_path}")
+                
+            if os.path.isdir(bin_path):
                 os.add_dll_directory(bin_path)
-                print(f"SUCCESS: Bin path added -> {bin_path}")
-            except Exception as e:
-                print(f"ERROR: Issue adding Bin path: {e}")
+                print("SUCCESS: Bin path added.")
+            else:
+                print(f"WARNING: Bin folder missing -> {bin_path}")
         else:
-            print(f"WARNING: Bin folder not found! -> {bin_path}")
+            # Legacy method
+            print("INFO: Using legacy PATH method.")
+            os.environ['PATH'] = dll_path + os.pathsep + os.environ['PATH']
+            os.environ['PATH'] = bin_path + os.pathsep + os.environ['PATH']
 
-        # 4. Check and Add Site-Packages (Libraries)
+        # 3. Add Site-Packages (Libraries)
         if os.path.exists(site_packages):
             if site_packages not in sys.path:
-                sys.path.insert(0, site_packages) # Insert at the very top of the list
-                print(f"SUCCESS: Site-Packages added to sys.path[0].")
-                print(f"DEBUG: Path -> {site_packages}")
+                sys.path.insert(0, site_packages) # Insert at the very top
+                print(f"SUCCESS: Site-Packages loaded -> {site_packages}")
             else:
-                print("INFO: Site-Packages is already in sys.path.")
+                print("INFO: Site-Packages already loaded.")
         else:
-            print(f"CRITICAL ERROR: Site-Packages folder missing! -> {site_packages}")
-            print("If this folder is missing, you cannot import external libraries.")
-
-    else:
-        print("DEBUG: System is not Windows. Skipping Windows-specific setup...")
+            print(f"CRITICAL ERROR: Site-Packages folder not found! -> {site_packages}")
 
     print("DEBUG: Script Completed.")
     print("------------------------------------------------")
