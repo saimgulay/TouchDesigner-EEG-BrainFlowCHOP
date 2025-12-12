@@ -3,59 +3,71 @@ import os
 import platform
 
 def onStart():
-    # --- CONFIGURATION START ---
-    
-    # 1. Your Windows Username (Check C:/Users/)
-    # Was 'saimgulay' in your first screenshot, 'janni' in your second.
-    user = 'username' 
+    print("------------------------------------------------")
+    print("DEBUG: Starting Script...")
 
-    # 2. Your Environment Name (Check 'conda env list')
-    condaEnv = 'env_Name' 
+    # --- CONFIGURATION ---
+    user = 'janni'           
+    condaEnv = 'TD'          
+    conda_folder = 'miniconda3' # Change to 'anaconda3' if needed
+    # ---------------------
 
-    # 3. Your Conda Installation Type
-    # Change this to 'anaconda3' if you installed the full Anaconda version.
-    conda_folder = 'miniconda3' 
-
-    # --- CONFIGURATION END ---
+    print(f"DEBUG: Target User: {user}")
+    print(f"DEBUG: Target Environment: {condaEnv}")
+    print(f"DEBUG: Current TD Python Version: {sys.version}")
 
     if platform.system().lower() == 'windows':
-        # Construct the base path to your environment
-        env_path = f'C:/Users/{user}/{conda_folder}/envs/{condaEnv}'
-        
-        dll_path = env_path + '/DLLs'
-        bin_path = env_path + '/Library/bin'
-        site_packages = env_path + '/Lib/site-packages'
+        # Construct paths
+        base_path = f'C:/Users/{user}/{conda_folder}/envs/{condaEnv}'
+        dll_path = base_path + '/DLLs'
+        bin_path = base_path + '/Library/bin'
+        site_packages = base_path + '/Lib/site-packages'
 
-        # Check if the path actually exists before trying to load it
-        if not os.path.exists(env_path):
-            print(f"ERROR: Could not find Conda Env at: {env_path}")
-            print("Check your 'user', 'condaEnv', and 'conda_folder' variables.")
+        print(f"DEBUG: Checking base path: {base_path}")
+
+        # 1. Check Base Folder
+        if not os.path.exists(base_path):
+            print(f"CRITICAL ERROR: Base environment folder not found! -> {base_path}")
+            print("Please check your 'user' or 'conda_folder' variables.")
             return
-
-        # Add DLLs (Required for Python 3.8+)
-        if sys.version_info.major >= 3 and sys.version_info.minor >= 8:
-            if os.path.isdir(dll_path):
-                os.add_dll_directory(dll_path)
-            if os.path.isdir(bin_path):
-                os.add_dll_directory(bin_path)
         else:
-            # Legacy method
-            os.environ['PATH'] = dll_path + os.pathsep + os.environ['PATH']
-            os.environ['PATH'] = bin_path + os.pathsep + os.environ['PATH']
+            print("SUCCESS: Base environment folder exists.")
 
-        # Add site-packages so Python can find your installed libraries
-        if site_packages not in sys.path:
-            sys.path = [site_packages] + sys.path
-            
-        print(f"SUCCESS: Loaded Conda Environment: {condaEnv}")
-    
+        # 2. Check and Add DLLs
+        if os.path.exists(dll_path):
+            try:
+                os.add_dll_directory(dll_path)
+                print(f"SUCCESS: DLL path added -> {dll_path}")
+            except Exception as e:
+                print(f"ERROR: Issue adding DLL path: {e}")
+        else:
+            print(f"WARNING: DLL folder not found! -> {dll_path}")
+
+        # 3. Check and Add Bin
+        if os.path.exists(bin_path):
+            try:
+                os.add_dll_directory(bin_path)
+                print(f"SUCCESS: Bin path added -> {bin_path}")
+            except Exception as e:
+                print(f"ERROR: Issue adding Bin path: {e}")
+        else:
+            print(f"WARNING: Bin folder not found! -> {bin_path}")
+
+        # 4. Check and Add Site-Packages (Libraries)
+        if os.path.exists(site_packages):
+            if site_packages not in sys.path:
+                sys.path.insert(0, site_packages) # Insert at the very top of the list
+                print(f"SUCCESS: Site-Packages added to sys.path[0].")
+                print(f"DEBUG: Path -> {site_packages}")
+            else:
+                print("INFO: Site-Packages is already in sys.path.")
+        else:
+            print(f"CRITICAL ERROR: Site-Packages folder missing! -> {site_packages}")
+            print("If this folder is missing, you cannot import external libraries.")
+
     else:
-        # MacOS Setup
-        base_mac = f'/opt/{conda_folder}/envs/{condaEnv}'
-        os.environ['PATH'] = base_mac + '/lib' + os.pathsep + os.environ['PATH']
-        os.environ['PATH'] = base_mac + '/bin' + os.pathsep + os.environ['PATH']
-        
-        # Note: Check your specific python version number here (e.g. python3.11)
-        sys.path = [base_mac + '/lib/python3.11/site-packages'] + sys.path
+        print("DEBUG: System is not Windows. Skipping Windows-specific setup...")
 
+    print("DEBUG: Script Completed.")
+    print("------------------------------------------------")
     return
